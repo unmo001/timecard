@@ -1,10 +1,50 @@
-{% if user.is_authenticated  %}
-    こんにちは！{{ user.username }}さん
-    仮のフロントページです。
+{% if user.is_authenticated %}
+    <h1>こんにちは！{{ user.username }}さん</h1>
+    <a href="{% url 'registration:logout' %}">ログアウト</a>
 
-    時間表示
+    <section>
+        現在時刻:
 
-    タイムカード押すボタン
-    これまでの履歴を月ごとに確認できる
-    エクセル出力
+        <p id="Clock1" style="display: inline"></p>
+        <script type="text/javascript">
+            setInterval('showClock1()', 1000);
+
+            function showClock1() {
+                var DWs = new Array('日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日');
+                var Now = new Date();
+                var YY = Now.getYear();
+                if (YY < 2000) {
+                    YY += 1900;
+                }
+                var MM = set0(Now.getMonth() + 1);
+                var DD = set0(Now.getDate());
+                var DW = DWs[Now.getDay()];
+                var hh = set0(Now.getHours());
+                var mm = set0(Now.getMinutes());
+                var ss = set0(Now.getSeconds());
+                var RTime1 = ' ' + YY + '.' + MM + '.' + DD + ' ' + DW + ' ' + hh + ':' + mm + ':' + ss + ' ';
+                document.getElementById("Clock1").innerHTML = RTime1;
+            }
+
+            function set0(num) {
+                var ret;
+                if (num < 10) {
+                    ret = "0" + num;
+                } else {
+                    ret = num;
+                }
+                return ret;
+            }
+        </script>
+    </section>
+    <form action="" method="post" id="attendance_form">
+        {% csrf_token %}
+        {{ form }}
+    </form>
+    <a href="#" id="attendance_form" class="save">登録する</a>
+    {% for commuting_time in commuting_times %}
+        <p>{{ user.arrive_at_work }}</p>
+    {% endfor %}
+    <p>これまでの履歴を月ごとに確認できる</p>
+    <p>エクセル出力</p>
 {% endif %}

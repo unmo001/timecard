@@ -1,10 +1,10 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate,login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 # Create your views here.
 from django.shortcuts import redirect, render
 from django.views.generic import CreateView
-
+from django.contrib.auth import get_user_model
 from registration.forms import LoginForm, SignUpForm
 
 
@@ -20,6 +20,7 @@ class Logout(LoginRequiredMixin, LogoutView):
 class SignUp(CreateView):
     form_class = SignUpForm
     template_name = 'registration/signup.html'
+    user = get_user_model()
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(data=request.POST)
@@ -28,6 +29,6 @@ class SignUp(CreateView):
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=raw_password)
-            Login(request, user)
+            login(request, user)
             return redirect('registration:login')
         return render(request, 'registration/signup.html', {'form': form})
