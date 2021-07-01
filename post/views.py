@@ -1,30 +1,47 @@
 # Create your views here.
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
-from django.shortcuts import resolve_url, redirect
-from django.urls import reverse_lazy
-from django.utils import timezone
-from django.views.generic import TemplateView, DetailView, CreateView
 
-from post.forms import TimeForm
+from datetime import date
+from itertools import chain
+
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.views.generic import TemplateView, CreateView
+
 from registration.models import CommutingTime
 
 
 class TopView(TemplateView):
     template_name = 'post/top.html'
 
+
 # やりたいこと、ボタンでユーザーに出社時間を記録させること
 # まずはユーザーにリレーショナルで出社時間モデルを紐づける
-class FrontView(LoginRequiredMixin,CreateView):
+class FrontView(CreateView):
+    template_name = 'post/front.html'
     model = CommutingTime
-    form_class = TimeForm
+    fields = []
 
     def form_valid(self, form):
-        post = form.save(commit=True)
+        post = form.save(commit=False)
         post.user = self.request.user
-        post.arrive_at_work = timezone.now()
-        post.save()
-        return redirect('post:front')
+
+        if "arrive_at_work" in self.request.POST:
+            aaw = self.request.POST['arrive_at_work']
+            post.arrive_at_work = timezone.datetime.today()
+            if CommutingTime.objects.filter(user=self.request.user, arrive_at_work__istartswith=date.today()):
+                return redirect('post:front')
+            else:
+                post.CommutingTime = CommutingTime(arrive_at_work=aaw)
+                post.save()
+            return redirect('post:front')
+        else:
+            CommutingTime.objects.filter(user=self.request.user, leave=None,
+                                         arrive_at_work__isnull=False).update(leave=timezone.datetime.today())
+            return redirect('post:front')
+
+    def get_context_data(self, **kwargs):
+        context = super(FrontView, self).get_context_data(**kwargs)
+        context['commuting_times'] = CommutingTime.objects.filter(user=self.request.user, )
 
 
+        return context

@@ -37,14 +37,47 @@
             }
         </script>
     </section>
-    <form action="" method="post" id="attendance_form">
-        {% csrf_token %}
-        {{ form }}
-    </form>
-    <a href="#" id="attendance_form" class="save">登録する</a>
     {% for commuting_time in commuting_times %}
-        <p>{{ user.arrive_at_work }}</p>
+        今月の累計賃金：　{{ count_payment }}
     {% endfor %}
-    <p>これまでの履歴を月ごとに確認できる</p>
-    <p>エクセル出力</p>
+    <div>
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit" name="arrive_at_work" value="arrive_at_work">
+                出社する
+            </button>
+
+        </form>
+    </div>
+
+    <div>
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit" value="leave" name="leave">
+                退社する
+            </button>
+        </form>
+
+        <div>
+
+
+            {% for commuting_time in commuting_times %}
+                出社時間：　{{ commuting_time.arrive_at_work }}
+                {% if commuting_time.leave %}
+                    　　 退社時間：　{{ commuting_time.leave }}
+                    <p>あなたは、今日{{ commuting_time.get_tdhours }}時間働きました。。。お疲れ様です。。</p>
+                    <p>今月は合計{{ commuting_time.get_count }}時間働きました</p>
+                    <p>時給は{{ commuting_time.payment }}円なので</p>
+                    <p>今月もらえる額は{{ commuting_time.get_payment }}円です</p>
+                    <br>
+                    <hr>
+                {% endif %}
+            {% endfor %}
+
+            {{ message }}
+
+
+        </div>
+        <p>これまでの履歴を月ごとに確認できる</p>
+
 {% endif %}
