@@ -1,15 +1,20 @@
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 # Create your models here.
 
 
+class User(AbstractUser):
+    wage = models.IntegerField(verbose_name='時給', default=1000)
+
+
+
 class CommutingTime(models.Model):
     arrive_at_work = models.DateTimeField(verbose_name='出社時間', null=True, blank=True)
     leave = models.DateTimeField(verbose_name='退社時間', null=True, blank=True)
-    count = models.IntegerField(verbose_name="合計労働時間",null=False,default=0)
-    payment = models.IntegerField(verbose_name='時給',default=1000)
+    count = models.IntegerField(verbose_name='一日の勤務時間', default=0)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
@@ -24,14 +29,8 @@ class CommutingTime(models.Model):
         else:
             return None
 
-    def get_count(self):
-        time = round((self.leave - self.arrive_at_work).seconds / 60 / 60)
-        if self.count == 0:
-            self.count += time
-            return self.count
-
-    def get_payment(self):
-        payment = self.count *self.payment
-        return payment
-
-
+    def get_count(self,):
+        if self.count:
+            return self.count * self.user.wage
+        else:
+            return None

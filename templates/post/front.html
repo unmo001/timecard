@@ -37,9 +37,11 @@
             }
         </script>
     </section>
-    {% for commuting_time in commuting_times %}
-        今月の累計賃金：　{{ count_payment }}
-    {% endfor %}
+    <div>
+
+        <p>合計勤務時間:{{ count_sums }}</p>
+
+    </div>
     <div>
         <form action="" method="post">
             {% csrf_token %}
@@ -57,7 +59,7 @@
                 退社する
             </button>
         </form>
-
+        <p>上位5件を表示しています。</p>
         <div>
 
 
@@ -67,8 +69,8 @@
                     　　 退社時間：　{{ commuting_time.leave }}
                     <p>あなたは、今日{{ commuting_time.get_tdhours }}時間働きました。。。お疲れ様です。。</p>
                     <p>今月は合計{{ commuting_time.get_count }}時間働きました</p>
-                    <p>時給は{{ commuting_time.payment }}円なので</p>
-                    <p>今月もらえる額は{{ commuting_time.get_payment }}円です</p>
+                    <p>時給は{{ user.wage }}円なので</p>
+                    <p>今月もらえる額は{{ commuting_time.get_count }}円です</p>
                     <br>
                     <hr>
                 {% endif %}
@@ -78,6 +80,8 @@
 
 
         </div>
+        <a href="{% url 'post:list' %}">もっと見る</a>
+
         <p>これまでの履歴を月ごとに確認できる</p>
 
 {% endif %}

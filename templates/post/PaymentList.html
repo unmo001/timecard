@@ -1,0 +1,22 @@
+<a href="{% url 'post:front' %}">戻る</a>
+<div>
+    以下一覧↓
+</div>
+<hr>
+<div>
+    {% if user.is_authenticated %}
+
+        {% for commuting_time in object_list %}
+            出社時間：　{{ commuting_time.arrive_at_work }}
+            {% if commuting_time.leave %}
+                　　 退社時間：　{{ commuting_time.leave }}
+                <p>あなたは、今日{{ commuting_time.get_tdhours }}時間働きました。。。お疲れ様です。。</p>
+                <p>今月は合計{{ commuting_time.get_count }}時間働きました</p>
+                <p>時給は{{ commuting_time.payment }}円なので</p>
+                <p>今月もらえる額は{{ commuting_time.get_payment }}円です</p>
+                <br>
+                <hr>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>

@@ -1,11 +1,11 @@
 # Create your views here.
 
 from datetime import date
-from itertools import chain
 
+from django.db.models import Sum
 from django.shortcuts import redirect
 from django.utils import timezone
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, ListView
 
 from registration.models import CommutingTime
 
@@ -35,13 +35,31 @@ class FrontView(CreateView):
                 post.save()
             return redirect('post:front')
         else:
-            CommutingTime.objects.filter(user=self.request.user, leave=None,
-                                         arrive_at_work__isnull=False).update(leave=timezone.datetime.today())
-            return redirect('post:front')
+            leave_time = timezone.datetime.now()
+            obj = CommutingTime.objects.filter(user=self.request.user, leave=None, arrive_at_work__isnull=False).first()
+            if obj:
+                obj.leave = leave_time
+                obj.count = round((leave_time - obj.arrive_at_work).seconds / 60 / 60)
+                obj.save()
+                return redirect('post:front')
 
     def get_context_data(self, **kwargs):
         context = super(FrontView, self).get_context_data(**kwargs)
-        context['commuting_times'] = CommutingTime.objects.filter(user=self.request.user, )
-
+        context['commuting_times'] = CommutingTime.objects.filter(user=self.request.user, ).order_by('-arrive_at_work')[
+                                     :5]
+        tzmonth = date.today()
+        month = tzmonth.month
+        count_sum = CommutingTime.objects.filter(count__istartswith=date.today()).aggregate(Sum('count'))['count__sum']
+        context['count_sums'] = count_sum
 
         return context
+
+
+class PaymentListView(ListView):
+    template_name = 'post/PaymentList.html'
+    model = CommutingTime
+
+    def get_queryset(self):
+        super(PaymentListView, self).get_queryset()
+        queryset = CommutingTime.objects.filter(user=self.request.user, ).order_by('-arrive_at_work')
+        return queryset
