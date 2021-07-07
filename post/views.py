@@ -1,5 +1,5 @@
 # Create your views here.
-
+import datetime
 from datetime import date
 
 from django.db.models import Sum
@@ -47,10 +47,10 @@ class FrontView(CreateView):
         context = super(FrontView, self).get_context_data(**kwargs)
         context['commuting_times'] = CommutingTime.objects.filter(user=self.request.user, ).order_by('-arrive_at_work')[
                                      :5]
-        tzmonth = date.today()
-        month = tzmonth.month
-        count_sum = CommutingTime.objects.filter(count__istartswith=date.today()).aggregate(Sum('count'))['count__sum']
+        mouth = datetime.date.today()
+        count_sum = CommutingTime.objects.filter(arrive_at_work__istartswith='{0}-{1:02d}'.format(mouth.year,mouth.month)).aggregate(Sum('count'))['count__sum']
         context['count_sums'] = count_sum
+        context['count_wage'] = count_sum * self.request.user.wage
 
         return context
 
